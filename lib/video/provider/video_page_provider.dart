@@ -6,8 +6,8 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class VideoPageProvider extends ChangeNotifier {
-  final String _myChannelId = 'UCkgdDBHO7zl3tWIjldQeK7g';
-  // 'UC_JElDDruEOg9KlzSE7CJOQ';
+  /// === DEFINE CHANNEL ID ====
+  final String _myChannelId = 'UCkgdDBHO7zl3tWIjldQeK7g'; // <===
   // Slidable panel controller
   late FloatingWidgetController fwController;
 

@@ -21,30 +21,19 @@ class _ExpandedPanelVideoState extends State<ExpandedPanelVideo>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Player Height
-  // double mainBodyHeight = 0;
   double playerHeight = 0;
 
-  // Pip Status
-  bool enablePip = true;
-
   // BottomSheet controller
-  PersistentBottomSheetController? bottomSheetController;
+  PersistentBottomSheetController? _bottomSheetController;
 
   // Scroll Controller
-  late ScrollController scrollController;
+  late ScrollController _scrollController;
 
   // Restoring Scroll position
-  bool restoringScroll = false;
-  double scrollExcessOffset = 0;
-
-  // Portrait player Aspect Ratio
-  double aspectRatio = 16 / 9;
+  bool _restoringScroll = false;
 
   // Animation controller for hiding Details & Engagement on scroll
-  late AnimationController animationController;
-
-  // Sharing
-  bool sharing = false;
+  late AnimationController _animationController;
 
   late VideoPageProvider _videoPageProvider;
 
@@ -55,16 +44,16 @@ class _ExpandedPanelVideoState extends State<ExpandedPanelVideo>
       context,
       listen: false,
     );
-    scrollController = ScrollController();
-    scrollController.addListener(
+    _scrollController = ScrollController();
+    _scrollController.addListener(
       () {
-        if (!restoringScroll) {
-          animationController.value =
-              1 - (scrollController.position.pixels.clamp(0, 200)) / 200;
+        if (!_restoringScroll) {
+          _animationController.value =
+              1 - (_scrollController.position.pixels.clamp(0, 200)) / 200;
         }
       },
     );
-    animationController = AnimationController(
+    _animationController = AnimationController(
       vsync: this,
       value: 1,
       duration: const Duration(milliseconds: 250),
@@ -73,13 +62,13 @@ class _ExpandedPanelVideoState extends State<ExpandedPanelVideo>
 
   @override
   Widget build(BuildContext context) {
-    if (bottomSheetController != null &&
+    if (_bottomSheetController != null &&
         _videoPageProvider.fwController.panelPosition < 1) {
       try {
-        bottomSheetController!.close();
+        _bottomSheetController!.close();
       } catch (_) {}
       setState(
-        () => bottomSheetController = null,
+        () => _bottomSheetController = null,
       );
     }
     return Scaffold(
@@ -92,30 +81,30 @@ class _ExpandedPanelVideoState extends State<ExpandedPanelVideo>
     return NotificationListener<ScrollNotification>(
       onNotification: (scroll) {
         if (scroll is ScrollEndNotification) {
-          if (scrollController.position.pixels < 100) {
-            animationController.animateTo(1).then(
+          if (_scrollController.position.pixels < 100) {
+            _animationController.animateTo(1).then(
               (_) {
-                restoringScroll = true;
-                scrollController
+                _restoringScroll = true;
+                _scrollController
                     .animateTo(0,
                         duration: const Duration(milliseconds: 150),
                         curve: Curves.ease)
                     .then(
-                      (_) => restoringScroll = false,
+                      (_) => _restoringScroll = false,
                     );
               },
             );
           } else {
-            animationController.animateTo(0).then(
+            _animationController.animateTo(0).then(
               (_) {
-                restoringScroll = true;
-                if (scrollController.position.pixels < 200) {
-                  scrollController
+                _restoringScroll = true;
+                if (_scrollController.position.pixels < 200) {
+                  _scrollController
                       .animateTo(200,
                           duration: const Duration(milliseconds: 150),
                           curve: Curves.ease)
                       .then(
-                        (_) => restoringScroll = false,
+                        (_) => _restoringScroll = false,
                       );
                 }
               },
@@ -144,7 +133,7 @@ class _ExpandedPanelVideoState extends State<ExpandedPanelVideo>
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: ListView(
-                        controller: scrollController,
+                        controller: _scrollController,
                         padding: EdgeInsets.zero,
                         children: [
                           _playlistChannelVideos(
@@ -185,7 +174,7 @@ class _ExpandedPanelVideoState extends State<ExpandedPanelVideo>
                 playerHeight = size.height;
               },
               child: AspectRatio(
-                aspectRatio: aspectRatio < 16 / 9 ? 16 / 9 : aspectRatio,
+                aspectRatio: 16 / 9,
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 400),
                   child: _videoPageProvider.getVideoSelected != null
@@ -197,17 +186,17 @@ class _ExpandedPanelVideoState extends State<ExpandedPanelVideo>
           ),
         ),
         AnimatedBuilder(
-          animation: animationController,
+          animation: _animationController,
           builder: (context, child) {
             return Opacity(
-              opacity: (animationController.value -
-                          (1 - animationController.value)) >
+              opacity: (_animationController.value -
+                          (1 - _animationController.value)) >
                       0
-                  ? (animationController.value -
-                      (1 - animationController.value))
+                  ? (_animationController.value -
+                      (1 - _animationController.value))
                   : 0,
               child: Align(
-                heightFactor: animationController.value,
+                heightFactor: _animationController.value,
                 child: child,
               ),
             );
@@ -237,7 +226,6 @@ class _ExpandedPanelVideoState extends State<ExpandedPanelVideo>
         return VideoDetails(
           viewModel: provider,
           onShare: () {
-            sharing = true;
             Share.share(
               _videoPageProvider.getVideoSelected!.url,
             );
